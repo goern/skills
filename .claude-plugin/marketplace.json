@@ -1,13 +1,13 @@
 {
-    "name": "goern-skills",
+    "name": "goern",
     "description": "A collection of Claude Code skills by goern",
     "owner": {
         "name": "goern"
     },
     "plugins": [
         {
-            "name": "goern-skills",
-            "description": "Research, synthesis, and more — Claude Code skills by goern.",
+            "name": "deep-research",
+            "description": "Research, synthesis, and more",
             "source": "./",
             "version": "1.0.0"
         }

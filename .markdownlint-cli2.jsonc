@@ -1,0 +1,12 @@
+{
+  // markdownlint-cli2 configuration
+  // Extends .markdownlint.jsonc for rule settings
+
+  // Ignore patterns
+  "ignores": [
+    ".planning/**",
+    ".claude/**",
+    "fixtures/**",
+    "skills/code-mapping/scripts/generate/templates/**"
+  ]
+}

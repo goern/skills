@@ -1,0 +1,16 @@
+{
+    "name": "goern-skills",
+    "version": "0.1.0",
+    "description": "A collection of Claude Code skills by goern — research, synthesis, and more.",
+    "author": {
+        "name": "goern"
+    },
+    "license": "GPL-3.0-or-later",
+    "keywords": [
+        "research",
+        "multi-agent",
+        "citations",
+        "synthesis"
+    ],
+    "skills": "./skills/"
+}

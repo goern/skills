@@ -1,0 +1,18 @@
+{
+    "version": "0.1",
+    "marketplaces": [
+        {
+            "name": "goern-skills",
+            "description": "A collection of Claude Code skills by goern",
+            "owner": "goern",
+            "plugins": [
+                {
+                    "name": "goern-skills",
+                    "description": "Research, synthesis, and more — Claude Code skills by goern.",
+                    "source": "./",
+                    "version": "0.1.0"
+                }
+            ]
+        }
+    ]
+}

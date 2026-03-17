@@ -1,0 +1,24 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.ambr$'  # Exclude syrupy snapshot files (auto-generated format)
+      - id: end-of-file-fixer
+        exclude: '^\.beads/\.migration-hint-ts$'  # Exclude beads migration timestamp (auto-generated)
+      - id: check-yaml
+        args: ['--allow-multiple-documents']
+      - id: check-merge-conflict
+      - id: check-json
+
+  # Markdown linting
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.17.2
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--fix"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.2
+    hooks:
+      - id: gitleaks

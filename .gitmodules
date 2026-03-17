@@ -1,0 +1,3 @@
+[submodule "brenner-axiom-pages"]
+	path = brenner-axiom-pages
+	url = ssh://git@codeberg.org/brenner-axiom/pages.git

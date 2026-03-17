@@ -5,17 +5,23 @@ description: >-
   well-cited markdown report through parallel research, synthesis, gap-filling,
   and citation verification. Also generates a companion 1-2 minute blog post
   summarizing key findings in first-person perspective. Outputs to
-  ./research-output/.
+  research-output/ in the caller's working directory.
 user-invocable: true
 ---
 
 # Deep Research — Multi-Agent Research System
 
 You are orchestrating a multi-agent research pipeline. Follow the 6 phases below
-sequentially. Do NOT skip phases. Save intermediate state to disk so it survives
-context compaction.
+sequentially. Save intermediate state to disk so it survives context compaction.
 
-Read the research guide and templates before starting:
+**CRITICAL: Output Directory Rule**
+All output files (research plans, reports, blog posts) MUST be written to
+`research-output/` inside the **Claude Code session's current working directory** —
+NOT inside the skill's own directory. Use absolute paths derived from the session's
+CWD to avoid ambiguity.
+
+Read the research guide and templates before starting (these are relative to the
+skill directory, use the paths as provided):
 
 - `./references/research-guide.md`
 - `./references/output-template.md`
@@ -39,7 +45,8 @@ Read the research guide and templates before starting:
    Axes should be mutually exclusive and collectively exhaustive (MECE).
    Use the research guide's axis templates for common input types.
 
-4. **Save the plan to disk** at `./research-output/.research-plan-<slug>.md`:
+4. **Save the plan to disk** at `<CWD>/research-output/.research-plan-<slug>.md`
+   (where `<CWD>` is the session's current working directory):
 
    ```markdown
    # Research Plan: <title>
@@ -53,7 +60,7 @@ Read the research guide and templates before starting:
    - **Status:** PLANNING → RESEARCHING
    ```
 
-5. **Create the output directory** if it doesn't exist: `./research-output/`
+5. **Create the output directory** if it doesn't exist: `<CWD>/research-output/`
 
 6. Tell the user the plan and how many subagents will be spawned.
 
@@ -225,7 +232,7 @@ After CitationAgent returns:
    - **Outcome**: What action or decision this enables
    - **Hypothesis chain**: "If we deliver [output], we expect [result], which should drive [outcome]"
 
-4. **Write the file** to `./research-output/<slug>-<YYYY-MM-DD>.md`
+4. **Write the file** to `<CWD>/research-output/<slug>-<YYYY-MM-DD>.md`
 
 5. **Update the plan file**: `Status: WRITING → COMPLETE`
 
@@ -253,7 +260,7 @@ the research into a quick, accessible read.
    - **Citations:** Reuse [Source N] references from the full report, but sparingly (2-4 max)
    - Do NOT explain the research methodology — point readers to the full report instead.
 
-4. **Save the blog post** to `./research-output/<slug>-blog-<YYYY-MM-DD>.md`
+4. **Save the blog post** to `<CWD>/research-output/<slug>-blog-<YYYY-MM-DD>.md`
 
 5. **Report to the user** — mention both output files (report + blog post).
 

@@ -274,10 +274,10 @@ only the lead (you) applies patches.
 
 | Name | Subagent type | Model | Role |
 |------|--------------|-------|------|
-| `critic` | `research-critic` | opus | Adversarial — load-bearing logical/factual breakage |
-| `skeptic` | `research-skeptic` | opus | Evidence audit — citation quality, source diversity, claim-source fit |
-| `editor` | `research-editor` | sonnet | Structure and clarity — argument reconstructability, narrative scaffolding |
-| `audience` | `research-audience` | sonnet | Reader-fit — does the draft answer the question for the intended reader |
+| `critic` | `dr-critic` | opus | Adversarial — load-bearing logical/factual breakage |
+| `skeptic` | `dr-skeptic` | opus | Evidence audit — citation quality, source diversity, claim-source fit |
+| `editor` | `dr-editor` | sonnet | Structure and clarity — argument reconstructability, narrative scaffolding |
+| `audience` | `dr-audience` | sonnet | Reader-fit — does the draft answer the question for the intended reader |
 
 Create a temp dir at `<CWD>/research-output/.review-<slug>/` for teammate outputs.
 

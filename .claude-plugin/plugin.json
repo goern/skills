@@ -1,7 +1,7 @@
 {
     "name": "goern-skills",
-    "version": "0.1.0",
-    "description": "A collection of Claude Code skills by goern — research, synthesis, and more.",
+    "version": "1.1.0",
+    "description": "Claude Code skills, agents, and slash commands for multi-agent research with team review and humanizing pass.",
     "author": {
         "name": "goern"
     },
@@ -9,8 +9,12 @@
     "keywords": [
         "research",
         "multi-agent",
+        "agent-team",
         "citations",
-        "synthesis"
+        "synthesis",
+        "review"
     ],
-    "skills": "./skills/"
+    "skills": "./skills/",
+    "agents": "./agents/",
+    "commands": "./commands/"
 }

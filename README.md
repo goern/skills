@@ -1,19 +1,44 @@
 # goern-skills
 
-A collection of Claude Code skills by goern.
+A collection of Claude Code skills, agents, and slash commands by goern.
 
-## Skills
+## Components
 
-### deep-research
+### Skill: deep-research
 
-Turns a single research prompt into a well-cited markdown report and a companion blog post through parallel multi-agent research, iterative synthesis, and citation verification.
+Turns a single research prompt into three artifacts — a deep-research artifact, a publishable humanized report, and a companion blog post — through parallel multi-agent research, iterative synthesis, citation verification, multi-perspective team review, and a final humanizing pass.
 
 Inspired by [Anthropic's multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system).
 
-## How It Works
+### Agents: dr-{critic,skeptic,editor,audience}
 
+Four single-shot reviewer agents that audit a research draft from orthogonal angles:
+
+| Agent | Role |
+|-------|------|
+| `dr-critic` | Adversarial — load-bearing logical and factual breakage |
+| `dr-skeptic` | Evidence audit — citation quality, source diversity, claim-source fit |
+| `dr-editor` | Structure and clarity — argument reconstructability, narrative scaffolding |
+| `dr-audience` | Reader-fit — does the draft answer the question for the intended reader |
+
+These ship as reusable subagent types. Use them directly via the `Agent` tool or spawn the whole team with `/team:review`.
+
+### Command: /team:review
+
+Spawns a 4-teammate review team (`dr-critic` + `dr-skeptic` + `dr-editor` + `dr-audience`) against any research draft, report, or technical writeup. Synthesizes convergent findings, auto-applies unambiguous patches, surfaces stalemates as open questions.
+
+```text
+/team:review research-output/topic-2026-04-28.md
+/team:review research-output/topic.md | What are the tradeoffs of X for Y?
 ```
-Prompt → Plan → Parallel Research (2-8 subagents) → Synthesis → Gap-Fill → Citation Verification → Report → Blog Post
+
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (see Requirements below).
+
+## How `deep-research` Works
+
+```text
+Prompt → Plan → Parallel Research (2-8 subagents) → Synthesis → Gap-Fill →
+Citation Verification → Write Artifact → Team Review → Blog Post → Humanize
 ```
 
 1. **Plan** — classifies complexity, generates MECE research axes
@@ -21,8 +46,10 @@ Prompt → Plan → Parallel Research (2-8 subagents) → Synthesis → Gap-Fill
 3. **Synthesize** — merges findings, deduplicates, identifies gaps and contradictions
 4. **Gap-Fill** — spawns targeted subagents for missing coverage (max 3 iterations)
 5. **Verify** — dedicated CitationAgent checks every claim against its source URL
-6. **Write** — produces a single markdown file with verification badges
-7. **Blog** — generates a 1-2 minute companion blog post summarizing key findings in first-person perspective
+6. **Write artifact** — produces the deep-research artifact with verification badges
+6.5. **Team review** — `dr-critic` + `dr-skeptic` + `dr-editor` + `dr-audience` review the artifact, lead synthesizes and auto-applies patches (skipped gracefully if agent teams are not enabled)
+7. **Blog post** — generates a 1-2 minute first-person companion blog post
+8. **Humanize** — produces a publishable report via the `write-like-goern` skill (Critical/Analytical register, structure preserved)
 
 Each report uses the **Outcomes / Outputs / Results** framework and includes a full bibliography with credibility ratings and verification status.
 
@@ -39,9 +66,28 @@ Or for development:
 claude --plugin-dir /path/to/goern-skills
 ```
 
+## Requirements
+
+The `/team:review` command and Phase 6.5 of `deep-research` use Claude Code's experimental agent teams feature. To enable it, set the environment variable in your shell:
+
+```bash
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+```
+
+Or via direnv (recommended) — drop a `.envrc` in the project where you call `deep-research`:
+
+```bash
+echo 'export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1' >> .envrc
+direnv allow
+```
+
+If unset, the deep-research skill will skip Phase 6.5 with a one-line note in the plan file and proceed without team review. The pipeline still produces the deep-research artifact, the blog post, and the publishable report — just without the multi-perspective hardening pass.
+
+The Phase 8 humanize pass requires the [`write-like-goern`](https://github.com/goern/dotfiles) skill (or any compatible skill named `write-like-goern`) to be available. If absent, the skill notes the gap and skips humanization.
+
 ## Usage
 
-```
+```text
 /goern-skills:deep-research "What is RLHF?"
 /goern-skills:deep-research "Compare RAG vs fine-tuning for enterprise LLM deployment"
 /goern-skills:deep-research https://arxiv.org/abs/2401.12345
@@ -49,7 +95,8 @@ claude --plugin-dir /path/to/goern-skills
 
 Output is written to `./research-output/`:
 
-- Full report: `<slug>-<date>.md`
+- Deep research artifact: `<slug>-<date>.md`
+- Publishable report: `<slug>-publishable-<date>.md`
 - Blog post: `<slug>-blog-<date>.md`
 
 ## Complexity Scaling
@@ -60,7 +107,7 @@ Output is written to `./research-output/`:
 | Moderate   | 3–4       | Comparison, multi-faceted, emerging field |
 | Complex    | 5–8       | Cross-domain, controversial, primary sources needed |
 
-## Output Sections
+## Output Sections (deep-research artifact)
 
 - Executive Summary
 - Key Findings (with inline citations and verification badges)
@@ -70,19 +117,29 @@ Output is written to `./research-output/`:
 - Sources / Bibliography (with credibility ratings)
 - Methodology (subagents, iterations, gaps)
 - Verification Summary (verified / partial / unverified / unavailable)
+- Team Review (convergent findings, applied patches, open questions) — when Phase 6.5 ran
 
 ## Project Structure
 
-```
+```text
 .claude-plugin/
   plugin.json             # Plugin manifest
+  marketplace.json        # Marketplace entry
+agents/
+  dr-critic.md            # Adversarial reviewer
+  dr-skeptic.md           # Evidence auditor
+  dr-editor.md            # Structure reviewer
+  dr-audience.md          # Reader-fit reviewer
+commands/
+  team/
+    review.md             # /team:review slash command
 skills/
   deep-research/
-    SKILL.md              # 7-phase orchestration prompt
+    SKILL.md              # 8-phase orchestration prompt
     references/
-      output-template.md  # Report template
-      blog-post-template.md # Blog post template (1-2 min read, first-person)
-      research-guide.md   # Complexity heuristics, source quality, search strategy
+      output-template.md
+      blog-post-template.md
+      research-guide.md
 ```
 
 ## License

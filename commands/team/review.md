@@ -8,6 +8,7 @@ tags: [agent-teams, research, review]
 Spawn a multi-perspective review team against a research draft, report, or technical writeup.
 
 **Input** (`$ARGUMENTS`): one of
+
 - A path to the target file (e.g. `research-output/topic-2026-04-28.md`)
 - A target plus the original research question, separated by `|` (e.g. `research-output/topic.md | What are the tradeoffs of X for Y?`)
 - Empty — ask which file
@@ -33,10 +34,10 @@ Create a team with four teammates. All read-only — none edit the target.
 
 | Name | Subagent type | Model | Role |
 |------|--------------|-------|------|
-| `critic` | `research-critic` | opus | Adversarial review — load-bearing logical/factual breakage |
-| `skeptic` | `research-skeptic` | opus | Evidence audit — citation quality, source diversity, claim-source fit |
-| `editor` | `research-editor` | sonnet | Structure and clarity — argument reconstructability, narrative scaffolding |
-| `audience` | `research-audience` | sonnet | Reader-fit — does the draft answer the question for the intended reader |
+| `critic` | `dr-critic` | opus | Adversarial review — load-bearing logical/factual breakage |
+| `skeptic` | `dr-skeptic` | opus | Evidence audit — citation quality, source diversity, claim-source fit |
+| `editor` | `dr-editor` | sonnet | Structure and clarity — argument reconstructability, narrative scaffolding |
+| `audience` | `dr-audience` | sonnet | Reader-fit — does the draft answer the question for the intended reader |
 
 Spawn prompts (fill `<target>` and `<output-dir>`):
 

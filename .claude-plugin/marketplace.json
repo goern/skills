@@ -7,9 +7,9 @@
     "plugins": [
         {
             "name": "deep-research",
-            "description": "Research, synthesis, and more",
+            "description": "Multi-agent research with team review and humanizing pass",
             "source": "./",
-            "version": "1.0.0"
+            "version": "1.1.0"
         }
     ]
 }

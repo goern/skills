@@ -33,8 +33,7 @@ bd dolt push
 ### Working with Issues
 
 Issues in Beads are:
-
-- **Git-native**: Stored in `.beads/issues.jsonl` and synced like code
+- **Git-native**: Stored in Dolt database with version control and branching
 - **AI-friendly**: CLI-first design works perfectly with AI coding agents
 - **Branch-aware**: Issues can follow your branch workflow
 - **Always in sync**: Auto-syncs with your commits
@@ -42,22 +41,19 @@ Issues in Beads are:
 ## Why Beads?
 
 ✨ **AI-Native Design**
-
 - Built specifically for AI-assisted development workflows
 - CLI-first interface works seamlessly with AI coding agents
 - No context switching to web UIs
 
 🚀 **Developer Focused**
-
 - Issues live in your repo, right next to your code
 - Works offline, syncs when you push
 - Fast, lightweight, and stays out of your way
 
 🔧 **Git Integration**
-
 - Automatic sync with git commits
 - Branch-aware issue tracking
-- Intelligent JSONL merge resolution
+- Dolt-native three-way merge resolution
 
 ## Get Started with Beads
 

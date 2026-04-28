@@ -2,5 +2,7 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "server",
-  "dolt_database": "nanoGeschoss"
+  "dolt_database": "goern_skills",
+  "project_id": "04e0ebd3-74e1-470b-9383-735d4243bcc3",
+  "global_dolt_database": "beads_global"
 }

@@ -1,6 +1,6 @@
 {
     "name": "goern-skills",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Claude Code skills, agents, and slash commands for multi-agent research with team review and humanizing pass.",
     "author": {
         "name": "goern"
@@ -14,7 +14,5 @@
         "synthesis",
         "review"
     ],
-    "skills": "./skills/",
-    "agents": "./agents/",
-    "commands": "./commands/"
+    "skills": "./skills/"
 }

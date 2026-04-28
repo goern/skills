@@ -3,16 +3,33 @@ name: deep-research
 description: >-
   Multi-agent research system that takes a research prompt and produces a
   well-cited markdown report through parallel research, synthesis, gap-filling,
-  and citation verification. Also generates a companion 1-2 minute blog post
-  summarizing key findings in first-person perspective. Outputs to
-  research-output/ in the caller's working directory.
+  citation verification, multi-perspective team review, and a final humanizing
+  pass. Produces three artifacts: the raw deep-research artifact (full citations,
+  verification table, methodology), a publishable humanized report (Goern's
+  voice, structure preserved), and a companion 1-2 minute first-person blog
+  post. Outputs to research-output/ in the caller's working directory.
 user-invocable: true
 ---
 
 # Deep Research — Multi-Agent Research System
 
-You are orchestrating a multi-agent research pipeline. Follow the 6 phases below
+You are orchestrating a multi-agent research pipeline. Follow the 8 phases below
 sequentially. Save intermediate state to disk so it survives context compaction.
+
+**Output artifacts produced (in order):**
+
+1. **Deep research artifact** — `<slug>-<YYYY-MM-DD>.md` — raw report with full
+   citations, verification table, methodology. Preserved untouched after Phase 6.
+2. **Publishable report** — `<slug>-publishable-<YYYY-MM-DD>.md` — humanized
+   version of the artifact via the `write-like-goern` skill. Structure, headers,
+   tables, and citations preserved verbatim.
+3. **Blog post** — `<slug>-blog-<YYYY-MM-DD>.md` — 250–500 word first-person
+   distillation.
+
+**Human-involvement budget:** the pipeline is designed to run end-to-end with
+minimal user prompts. Auto-apply unambiguous review patches, auto-proceed
+between phases. Surface a decision to the user only when the team review
+produces stalemates or when a phase fails irrecoverably.
 
 **CRITICAL: Output Directory Rule**
 All output files (research plans, reports, blog posts) MUST be written to
@@ -232,24 +249,84 @@ After CitationAgent returns:
    - **Outcome**: What action or decision this enables
    - **Hypothesis chain**: "If we deliver [output], we expect [result], which should drive [outcome]"
 
-4. **Write the file** to `<CWD>/research-output/<slug>-<YYYY-MM-DD>.md`
+4. **Write the file** to `<CWD>/research-output/<slug>-<YYYY-MM-DD>.md` —
+   this is the **deep research artifact**. After Phase 6.5 review patches are
+   applied, this file is preserved as-is for the rest of the pipeline.
 
-5. **Update the plan file**: `Status: WRITING → COMPLETE`
+5. **Update the plan file**: `Status: WRITING → REVIEWING`
 
-6. **Proceed to Phase 7** to generate the companion blog post.
+6. **Proceed to Phase 6.5** for multi-perspective team review.
+
+---
+
+## Phase 6.5: Team Review (real agent team)
+
+Spawn a 4-teammate review team against the artifact to harden it before publishing.
+
+**Prerequisite:** `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set (typically
+via `.envrc`). If unset, skip Phase 6.5 with a one-line note in the plan file
+and proceed to Phase 7. Do not block the pipeline.
+
+### Team spawn
+
+Create a team with four teammates, all read-only. None edits the artifact —
+only the lead (you) applies patches.
+
+| Name | Subagent type | Model | Role |
+|------|--------------|-------|------|
+| `critic` | `research-critic` | opus | Adversarial — load-bearing logical/factual breakage |
+| `skeptic` | `research-skeptic` | opus | Evidence audit — citation quality, source diversity, claim-source fit |
+| `editor` | `research-editor` | sonnet | Structure and clarity — argument reconstructability, narrative scaffolding |
+| `audience` | `research-audience` | sonnet | Reader-fit — does the draft answer the question for the intended reader |
+
+Create a temp dir at `<CWD>/research-output/.review-<slug>/` for teammate outputs.
+
+Spawn prompts (fill `<artifact>`, `<question>`, `<output-dir>`):
+
+- **critic**: "Adversarially review `<artifact>`. Apply load-bearing critique bar. Write to `<output-dir>/critic.md`. Post path to team mailbox addressed to `lead`."
+- **skeptic**: "Audit evidence base of `<artifact>`. Verify citations, check source mix, look for missed counter-evidence. Write to `<output-dir>/skeptic.md`. Post path to lead."
+- **editor**: "Review structure and clarity of `<artifact>`. Map argument graph, flag TOC gaps and order errors. Write to `<output-dir>/editor.md`. Post path to lead."
+- **audience**: "Reader-fit review of `<artifact>`. Original research question: `<question>`. Does the draft answer it for the intended reader? Write to `<output-dir>/audience.md`. Post path to lead."
+
+### Mediation loop (lead's job — i.e. you)
+
+1. Wait for all four teammates to report. Do not implement anything yourself while they work.
+2. Read each temp file.
+3. Synthesize a `## Team Review — <YYYY-MM-DD>` section appended to the artifact, containing:
+   - **Convergent findings** — issues flagged by 2+ teammates. Load-bearing.
+   - **Per-perspective findings** — flagged by one teammate. Lower priority but record.
+   - **Patches applied** — file:line edits the lead made directly to the artifact.
+   - **Open questions** — stalemates, ambiguous fixes (these go to the user).
+   - **Strongest moves preserved** — load-bearing wins flagged by the team.
+4. **Auto-apply patches** for any blocker- or major-severity finding where the
+   smallest-fix is unambiguous. Do not pause to confirm — the human-involvement
+   budget is one decision at the end of the pipeline.
+5. **Surface to user only** if open questions block the meaning of a section
+   (e.g. unresolvable contradiction, unverifiable load-bearing source). Otherwise
+   record as open questions and proceed.
+6. Delete `<output-dir>` after synthesis. Temp files served their purpose.
+
+### Hard rules
+
+- **Maximum one round.** Fan-out review, not multi-round debate.
+- **No teammate edits the artifact.** Lead-only synthesis.
+- **Convergence is the signal.** Flagged by one teammate = interesting; by two = load-bearing.
+- **Token budget warning** — four teammates against a 5,000-word artifact is heavy. If the artifact is unusually large, note it in the plan but proceed.
+
+After review, update the plan file: `Status: REVIEWING → BLOGGING`.
 
 ---
 
 ## Phase 7: Blog Post
 
-After the full report is written, generate a companion blog post that distills
+After Phase 6.5 review and patches, generate a companion blog post that distills
 the research into a quick, accessible read.
 
 1. **Read the blog post template** from
    `./references/blog-post-template.md`.
 
 2. **Select content for the blog post:**
-   - Pick the 3-4 most impactful findings from the report (prioritize VERIFIED claims).
+   - Pick the 3-4 most impactful findings from the artifact (prioritize VERIFIED claims).
    - Identify the single most surprising or counterintuitive finding.
    - Distill the actionable takeaway into one sentence.
 
@@ -262,7 +339,81 @@ the research into a quick, accessible read.
 
 4. **Save the blog post** to `<CWD>/research-output/<slug>-blog-<YYYY-MM-DD>.md`
 
-5. **Report to the user** — mention both output files (report + blog post).
+5. Update the plan file: `Status: BLOGGING → HUMANIZING`.
+
+6. **Proceed to Phase 8** to produce the publishable humanized report.
+
+---
+
+## Phase 8: Humanize (publishable report)
+
+Produce the **publishable report** — a humanized version of the deep research
+artifact that reads like Goern wrote it, not like Claude wrote it for him.
+
+**Critical:** the deep research artifact (`<slug>-<YYYY-MM-DD>.md`) is preserved
+untouched. The publishable report is a **new file** — both artifacts coexist.
+
+### Procedure
+
+1. **Read the deep research artifact** end-to-end.
+
+2. **Invoke the `write-like-goern` skill** with the artifact body as input.
+
+   Pin the register explicitly in the invocation:
+
+   > "Apply the **Critical / Analytical** register from `write-like-goern`.
+   > This is a research report, not a casual note. Preserve formal structure;
+   > tighten prose at sentence and paragraph level only."
+
+3. **Hard constraints — the humanizer must NOT touch:**
+   - All H1/H2/H3 headers (verbatim, no rewording, no lowercase conversion).
+   - All tables (verification table, source quality table, etc.).
+   - All code blocks and fenced quotations.
+   - All citation markers `[Source N]` — must remain in identical positions.
+   - The Methodology section (must stay neutral and technical).
+   - The Verification Table (must stay verbatim).
+   - URLs and reference list at the bottom.
+   - The Outcomes / Outputs / Results framework section structure.
+
+4. **Hard constraints — the humanizer SHOULD apply:**
+   - Front-load the point in each section (move buried ledes up).
+   - Strip throat-clearing, hedge walls, and filler ("It is important to note that...").
+   - Tighten compound sentences doing too much work.
+   - Strip AI-tells: "Das ist nicht X, das ist Y" constructions, staccato triadic
+     punches, era-openings, empty pivots, inflated abstractions.
+   - Run the tension-payoff check on each claim — if a sentence only adds rhythm,
+     cut it.
+   - Preserve normal capitalization (Critical/Analytical register, not casual).
+   - English (or matching the artifact's input language).
+
+5. **Save the publishable report** to
+   `<CWD>/research-output/<slug>-publishable-<YYYY-MM-DD>.md`
+
+   Add a frontmatter block at the top:
+
+   ```markdown
+   ---
+   source-artifact: <slug>-<YYYY-MM-DD>.md
+   humanized-via: write-like-goern (Critical/Analytical register)
+   date: <YYYY-MM-DD>
+   ---
+   ```
+
+6. **Verify structural fidelity.** Diff the publishable report's headers and
+   tables against the artifact. If any header was renamed, any table was reformatted,
+   or any `[Source N]` marker is missing, re-run Phase 8 with a stricter pin.
+
+7. Update the plan file: `Status: HUMANIZING → COMPLETE`.
+
+8. **Report to the user** — mention all three output files (artifact + publishable + blog post).
+
+### Why two artifacts and not one
+
+The deep research artifact is the *evidence record* — formal, neutral, defensible
+under audit. The publishable report is the *communication layer* — Goern's voice,
+ready to ship. Keeping them separate means the artifact stays trustworthy for
+re-use (citations re-checked, claims re-verified) while the publishable version
+can be more direct without sacrificing the underlying rigor.
 
 ---
 
@@ -276,3 +427,13 @@ the research into a quick, accessible read.
   a gap — do not invent findings.
 - **Be transparent about limitations.** The Methodology section must honestly report
   what was and wasn't found.
+- **Preserve the deep research artifact.** Phase 8 must never overwrite the
+  artifact file produced by Phase 6. The publishable report is always a new file
+  with the `-publishable-` infix in its name.
+- **Preserve structural fidelity in the publishable report.** Headers, tables,
+  citation markers, Methodology, and Verification Table must match the artifact
+  byte-for-byte. The `write-like-goern` pass operates only on prose between
+  these structural elements.
+- **Skip Phase 6.5 gracefully if agent teams are disabled.** If
+  `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set, log a one-line note in the
+  plan file and proceed to Phase 7. Do not block the pipeline.
